@@ -1,5 +1,11 @@
 # Contentful Demo — Adequate Catering Co.
 
+[![CI](https://github.com/nilpointr/contentful-demo/actions/workflows/ci.yml/badge.svg)](https://github.com/nilpointr/contentful-demo/actions/workflows/ci.yml)
+![Next.js](https://img.shields.io/badge/Next.js-000000?style=flat&logo=next.js&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat&logo=typescript&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-06B6D4?style=flat&logo=tailwindcss&logoColor=white)
+![Contentful](https://img.shields.io/badge/Contentful-2478CC?style=flat&logo=contentful&logoColor=white)
+
 A proof-of-concept demonstrating [Contentful](https://www.contentful.com) as a headless CMS
 backing a Next.js site for Adequate Catering Co., a fictional catering business that promises
 nothing more than adequacy. Scope is intentionally small: a homepage and one marketing landing
@@ -35,6 +41,30 @@ migrations/               Content types defined as code (contentful-migration), 
 midjourney-prompts.md    Prompts for the placeholder images, mapped to Contentful entries/fields
 ```
 
+## Architecture
+
+```mermaid
+graph LR
+    Editor([Content Editor]) -->|edit & publish| WebApp[Contentful Web App]
+    WebApp --> Space[(Contentful Space)]
+    Space --> API{{GraphQL Content API}}
+
+    subgraph NextJS[Next.js App]
+        direction TB
+        API -->|fetch at build time| Home["/ — SSG + ISR (60s)"]
+        API -->|fetch on request, cached 60s| Slug["/[slug] — SSR on-demand"]
+    end
+
+    Home --> Browser([Visitor Browser])
+    Slug --> Browser
+```
+
+The homepage (`/`) is statically prerendered at build time; any other page (`/[slug]`) is
+server-rendered on request. Both paths go through the same GraphQL client, and both cache the
+Contentful response for 60 seconds (Next.js's Data Cache) — so "on-demand" doesn't mean "hits
+Contentful every request." See [Troubleshooting](#troubleshooting) for the caching gotcha this
+causes.
+
 ## Contentful Resources
 
 - [contentful.com](https://www.contentful.com) — product site
@@ -62,6 +92,22 @@ model instead of separate rigid content types.
 
 The homepage is a `page` entry with slug `/`; the landing page is another `page` entry with its own
 slug — both assembled from the same reusable section types via the `sections` field.
+
+```mermaid
+erDiagram
+    PAGE }o--o{ COMPONENT_HERO : sections
+    PAGE }o--o{ COMPONENT_CATERING_PACKAGE : sections
+    PAGE }o--o{ COMPONENT_FEATURE_SECTION : sections
+    PAGE }o--o{ COMPONENT_TESTIMONIAL : sections
+    PAGE }o--o{ COMPONENT_TESTIMONIAL_SECTION : sections
+    PAGE }o--o{ COMPONENT_CALL_TO_ACTION : sections
+    COMPONENT_FEATURE_SECTION }o--o{ COMPONENT_CATERING_PACKAGE : items
+    COMPONENT_TESTIMONIAL_SECTION }o--o{ COMPONENT_TESTIMONIAL : testimonials
+```
+
+Relationships are many-to-many, not one-to-many — the same component entry can be (and is)
+reused across multiple pages or sections. The seeded content actually does this: both pages
+share the same testimonial section entry.
 
 Each content type's `internalName` field is marked `omitted` (editor-only, hidden from the Delivery
 API response) per the data model docs' guidance on separating editorial fields from public output.
