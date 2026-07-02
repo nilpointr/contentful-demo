@@ -24,7 +24,7 @@ page, both content-managed.
 
 ## Prerequisites
 
-- Node.js 22.13 or later (required by pnpm 11)
+- Node.js 22 or later
 - [pnpm](https://pnpm.io) — install with `npm install -g pnpm` if you don't have it
 - A [Contentful](https://www.contentful.com) account with an empty space created (Free/Community
   tier is enough)
