@@ -1,6 +1,4 @@
 allowBuilds:
   spawn-sync: true
-
-ignoredBuiltDependencies:
-  - sharp
-  - unrs-resolver
+  sharp: true
+  unrs-resolver: false
