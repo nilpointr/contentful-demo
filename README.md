@@ -20,7 +20,7 @@ page, both content-managed.
 | Package manager | pnpm                                                                                             |
 | CMS             | Contentful (Free/Community tier)                                                                 |
 | Content API     | Contentful [GraphQL Content API](https://www.contentful.com/developers/docs/references/graphql/) |
-| Hosting         | TBD                                                                                              |
+| Hosting         | [Vercel](https://vercel.com)                                                                     |
 
 ## Prerequisites
 
@@ -163,6 +163,30 @@ pnpm run build    # production build
 pnpm run start    # run the production build
 ```
 
+## Deployment
+
+Live at **[contentful-demo-orcin.vercel.app](https://contentful-demo-orcin.vercel.app)**.
+
+Hosted on [Vercel](https://vercel.com), linked directly to this GitHub repository:
+
+- **Production deploys** — every push to `main` triggers a production build and deploy
+  automatically.
+- **Preview deploys** — every pull request gets its own preview deployment, with the URL posted
+  as a PR comment.
+
+### CI and branch protection
+
+`main` is a protected branch — pull requests must pass both required status checks before
+merging:
+
+| Check    | What it verifies                                                                                          |
+| -------- | --------------------------------------------------------------------------------------------------------- |
+| `build`  | GitHub Actions: lint, format check, test suite, production build ([`ci.yml`](./.github/workflows/ci.yml)) |
+| `Vercel` | The PR's preview deployment builds and deploys successfully                                               |
+
+Force-pushes and branch deletion are disabled on `main`, and these checks apply even to repo
+admins.
+
 ## Scripts
 
 | Script                          | What it does                          |
@@ -213,4 +237,4 @@ No license — private demo project, not intended for reuse or distribution.
 ## Status
 
 Homepage and landing page are live end-to-end (content model, seeded copy, GraphQL fetching,
-styled rendering, images). Hosting/deployment not yet set up.
+styled rendering, images), deployed to Vercel with CI and branch protection in place.
